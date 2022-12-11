@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>csharp on Bartłomiej Gaweł</title>
+    <link>/tags/csharp/</link>
+    <description>Recent content in csharp on Bartłomiej Gaweł</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
+    <lastBuildDate>Fri, 18 Dec 2020 18:58:57 +0100</lastBuildDate><atom:link href="/tags/csharp/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Custom .NET Templates</title>
+      <link>/posts/custom-dotnet-templates/</link>
+      <pubDate>Fri, 18 Dec 2020 18:58:57 +0100</pubDate>
+      
+      <guid>/posts/custom-dotnet-templates/</guid>
+      <description>The .NET SDK has many built-in templates that you can use to create new applications. However, in many cases you would like to add your own components (such as nugets) without the need to configure them. You can, of course, create an application from the default template, then manually copy and paste all required stuff but it takes some time. Fortunately, there&amp;rsquo;s a better way. You can create your custom templates and add whatever you want to them.</description>
+    </item>
+    
+  </channel>
+</rss>
