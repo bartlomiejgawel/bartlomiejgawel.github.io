@@ -1,0 +1,205 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Posts on Bartłomiej Gaweł</title>
+        <link>/posts/</link>
+        <description>Recent content in Posts on Bartłomiej Gaweł</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
+        <lastBuildDate>Fri, 18 Dec 2020 18:58:57 +0100</lastBuildDate>
+        <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>Custom .NET Templates</title>
+            <link>/posts/custom-dotnet-templates/</link>
+            <pubDate>Fri, 18 Dec 2020 18:58:57 +0100</pubDate>
+            
+            <guid>/posts/custom-dotnet-templates/</guid>
+            <description>The .NET SDK has many built-in templates that you can use to create new applications. However, in many cases you would like to add your own components (such as nugets) without the need to configure them. You can, of course, create an application from the default template, then manually copy and paste all required stuff but it takes some time. Fortunately, there&amp;rsquo;s a better way. You can create your custom templates and add whatever you want to them.</description>
+            <content type="html"><![CDATA[<p>The .NET SDK has many built-in templates that you can use to create new applications. However, in many cases you would like to add your own components (such as nugets) without the need to configure them. You can, of course, create an application from the default template, then manually copy and paste all required stuff but it takes some time. Fortunately, there&rsquo;s a better way. You can create your custom templates and add whatever you want to them. In the next sections, I&rsquo;ll show you how to do this.</p>
+<h2 id="introduction">Introduction</h2>
+<p>The <code>dotnet new</code> command creates a .NET project or other artifacts based on a template. It calls the template engine (which is open source and the source code can be found <a href="https://github.com/dotnet/templating/">here</a>) to create the artifacts on disk based on the specified template and options. You can also use this command to install/uninstall templates. It doesn&rsquo;t require installing additional packages. All you need is the .NET SDK.</p>
+<h2 id="creating-a-new-template">Creating a new template</h2>
+<p>Let&rsquo;s create a new template called <code>my-custom-template</code>. For this purpose, create a hierarchical structure of files and directories as below:</p>
+<ul>
+<li>templates
+<ul>
+<li>my-custom-template
+<ul>
+<li>.template.config
+<ul>
+<li>template.json</li>
+</ul>
+</li>
+<li>source
+<ul>
+<li>&hellip;</li>
+</ul>
+</li>
+<li>SERVICE_NAME.sln</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>A <code>template.json</code> file is the definition of your template. You can specify its name, parameters and much more. For now, copy and paste the following content (it&rsquo;s quite legible):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;$schema&#34;</span>: <span style="color:#e6db74">&#34;http://json.schemastore.org/template&#34;</span>,
+  <span style="color:#f92672">&#34;classifications&#34;</span>: [ <span style="color:#e6db74">&#34;C#&#34;</span> ],
+  <span style="color:#f92672">&#34;identity&#34;</span>: <span style="color:#e6db74">&#34;My.Custom.Api&#34;</span>,
+  <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;My Custom Template&#34;</span>,
+  <span style="color:#f92672">&#34;shortName&#34;</span>: <span style="color:#e6db74">&#34;my-custom-template&#34;</span>,
+  <span style="color:#f92672">&#34;tags&#34;</span>: {
+    <span style="color:#f92672">&#34;language&#34;</span>: <span style="color:#e6db74">&#34;C#&#34;</span>,
+    <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;project&#34;</span>
+  },
+  <span style="color:#f92672">&#34;symbols&#34;</span>: {
+    <span style="color:#f92672">&#34;serviceName&#34;</span>: {
+      <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;parameter&#34;</span>,
+      <span style="color:#f92672">&#34;datatype&#34;</span>: <span style="color:#e6db74">&#34;text&#34;</span>,
+      <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Service name&#34;</span>,
+      <span style="color:#f92672">&#34;replaces&#34;</span>: <span style="color:#e6db74">&#34;SERVICE_NAME&#34;</span>,
+      <span style="color:#f92672">&#34;fileRename&#34;</span>: <span style="color:#e6db74">&#34;SERVICE_NAME&#34;</span>,
+      <span style="color:#f92672">&#34;isRequired&#34;</span>: <span style="color:#66d9ef">true</span>
+    }
+  }
+}
+</code></pre></div><p>In the code above I&rsquo;ve already defined a template called <code>My Custom Template</code> with a required parameter <code>serviceName</code>. Now you can use this parameter in the names of files or directories and in the content of any file. If you create a new application based on this template, all occurrences of <code>SERVICE_NAME</code> will be replaced with the provided data.</p>
+<p>In the <code>source</code> directory let&rsquo;s add a web API project <code>SERVICE_NAME.Api.csproj</code> (or whatever else you want). You can take a look at the template I&rsquo;ve created <a href="https://github.com/bartlomiejgawel/blog-examples/tree/master/custom-dotnet-templates/templates/my-custom-template">here</a>.</p>
+<p>Finally, I have a draft of my template. Let&rsquo;s check out other features offered by the template engine.</p>
+<h3 id="transformation-of-parameters">Transformation of parameters</h3>
+<p>Sometimes you want to change the value of the input parameter. In such situations, you can use data transformations. There are many ways to do this, I&rsquo;ll show you one of them. For example, if you want a lowercase version of the <code>serviceName</code> parameter, you can do the following:</p>
+<ul>
+<li>Define a new parameter of type <code>derived</code>.</li>
+<li>Add a <code>forms</code> section and create a new form that transforms its value.</li>
+<li>Use it wherever you want.</li>
+</ul>
+<p>You can find a full example below:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#960050;background-color:#1e0010">...</span>
+  <span style="color:#f92672">&#34;symbols&#34;</span>: {
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#f92672">&#34;serviceLowerName&#34;</span>: {
+      <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;derived&#34;</span>,
+      <span style="color:#f92672">&#34;datatype&#34;</span>: <span style="color:#e6db74">&#34;text&#34;</span>,
+      <span style="color:#f92672">&#34;valueSource&#34;</span>: <span style="color:#e6db74">&#34;serviceName&#34;</span>,
+      <span style="color:#f92672">&#34;valueTransform&#34;</span>: <span style="color:#e6db74">&#34;lowerCaseForm&#34;</span>,
+      <span style="color:#f92672">&#34;replaces&#34;</span>: <span style="color:#e6db74">&#34;SERVICE_LOWER_NAME&#34;</span>,
+      <span style="color:#f92672">&#34;fileRename&#34;</span>: <span style="color:#e6db74">&#34;SERVICE_LOWER_NAME&#34;</span>
+    }
+  },
+  <span style="color:#f92672">&#34;forms&#34;</span>: {
+    <span style="color:#f92672">&#34;lowerCaseForm&#34;</span>: {
+      <span style="color:#f92672">&#34;identifier&#34;</span>: <span style="color:#e6db74">&#34;chain&#34;</span>,
+      <span style="color:#f92672">&#34;steps&#34;</span>: [
+        <span style="color:#e6db74">&#34;lowerCaseInvariant&#34;</span>
+      ]
+    }
+  }
+  <span style="color:#960050;background-color:#1e0010">...</span>
+}
+</code></pre></div><p>Now you can use <code>SERVICE_LOWER_NAME</code> in the same way as <code>SERVICE_NAME</code>. What is more, you can always reuse already defined forms for other parameters.</p>
+<h3 id="custom-operations">Custom operations</h3>
+<p>In some cases, you want to conditionally generate the content of the file. The template engine allows you to define a section called <code>SpecialCustomOperations</code>, for example:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#960050;background-color:#1e0010">...</span>
+  <span style="color:#f92672">&#34;symbols&#34;</span>: {
+    <span style="color:#960050;background-color:#1e0010">...</span>
+  },
+  <span style="color:#f92672">&#34;SpecialCustomOperations&#34;</span>: {
+    <span style="color:#f92672">&#34;**/*.txt&#34;</span>: {
+      <span style="color:#f92672">&#34;operations&#34;</span>: [
+        {
+          <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;conditional&#34;</span>,
+          <span style="color:#f92672">&#34;configuration&#34;</span>: {
+            <span style="color:#f92672">&#34;if&#34;</span>: [ <span style="color:#e6db74">&#34;---#if&#34;</span> ],
+            <span style="color:#f92672">&#34;else&#34;</span>: [ <span style="color:#e6db74">&#34;---#else&#34;</span> ],
+            <span style="color:#f92672">&#34;elseif&#34;</span>: [ <span style="color:#e6db74">&#34;---#elseif&#34;</span> ],
+            <span style="color:#f92672">&#34;endif&#34;</span>: [ <span style="color:#e6db74">&#34;---#endif&#34;</span> ],
+            <span style="color:#f92672">&#34;trim&#34;</span>: <span style="color:#e6db74">&#34;false&#34;</span>,
+            <span style="color:#f92672">&#34;wholeLine&#34;</span>: <span style="color:#e6db74">&#34;true&#34;</span>
+          }
+        }
+      ]
+    }
+  }
+}
+</code></pre></div><p>In the example above, I&rsquo;ve just defined conditional operations for files with the extension <code>txt</code>. If I define a custom parameter of type <code>choice</code> in the following way:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#960050;background-color:#1e0010">...</span>
+  <span style="color:#f92672">&#34;symbols&#34;</span>: {
+    <span style="color:#960050;background-color:#1e0010">...</span>
+    <span style="color:#f92672">&#34;customChoice&#34;</span>: {
+      <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;parameter&#34;</span>,
+      <span style="color:#f92672">&#34;datatype&#34;</span>: <span style="color:#e6db74">&#34;choice&#34;</span>,
+      <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Custom choice description&#34;</span>,
+      <span style="color:#f92672">&#34;choices&#34;</span>: [
+        {
+          <span style="color:#f92672">&#34;choice&#34;</span>: <span style="color:#e6db74">&#34;first&#34;</span>,
+          <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;First description&#34;</span>
+        },
+        {
+          <span style="color:#f92672">&#34;choice&#34;</span>: <span style="color:#e6db74">&#34;second&#34;</span>,
+          <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Second description&#34;</span>
+        }
+      ],
+      <span style="color:#f92672">&#34;isRequired&#34;</span>: <span style="color:#66d9ef">false</span>,
+      <span style="color:#f92672">&#34;defaultValue&#34;</span>: <span style="color:#e6db74">&#34;first&#34;</span>
+    }
+  }
+  <span style="color:#960050;background-color:#1e0010">...</span>
+}
+</code></pre></div><p>Then I can write in any <code>txt</code> file:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt">---#if (customChoice==&#34;first&#34;)
+customChoice -&gt; first
+---#elseif (customChoice==&#34;second&#34;)
+customChoice -&gt; second
+---#else
+customChoice -&gt; none
+---#endif
+</code></pre></div><p>If any condition is met, its content will be added.</p>
+<h2 id="installing-templates">Installing templates</h2>
+<p>At this stage, we have already discussed the configuration of templates. It&rsquo;s time to find out how to install them. You can do this by:</p>
+<ol>
+<li>Specifying a file system directory that contains templates.</li>
+<li>Creating and installing a nuget package.</li>
+</ol>
+<h3 id="specifying-a-file-system-directory">Specifying a file system directory</h3>
+<p>It&rsquo;s quite simple. You have to go to the root folder of your templates and run the command <code>dotnet new -i .\</code>. That&rsquo;s all. If you want to uninstall templates, just execute the command <code>dotnet new -u</code> and choose which one you want to delete.</p>
+<h3 id="creating-and-installing-a-nuget-package">Creating and installing a nuget package</h3>
+<p>First of all, we have to create a nuget package. Go to the root folder, create <code>templatepack.csproj</code> file and paste following content (I don&rsquo;t think any further explanation is needed):</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;Project</span> <span style="color:#a6e22e">Sdk=</span><span style="color:#e6db74">&#34;Microsoft.NET.Sdk&#34;</span><span style="color:#f92672">&gt;</span>
+
+  <span style="color:#f92672">&lt;PropertyGroup&gt;</span>
+    <span style="color:#f92672">&lt;PackageType&gt;</span>Template<span style="color:#f92672">&lt;/PackageType&gt;</span>
+    <span style="color:#f92672">&lt;PackageVersion&gt;</span>1.0.0<span style="color:#f92672">&lt;/PackageVersion&gt;</span>
+    <span style="color:#f92672">&lt;PackageId&gt;</span>Custom.Templates<span style="color:#f92672">&lt;/PackageId&gt;</span>
+    <span style="color:#f92672">&lt;Title&gt;</span>Custom Templates<span style="color:#f92672">&lt;/Title&gt;</span>
+    <span style="color:#f92672">&lt;Authors&gt;</span>Me<span style="color:#f92672">&lt;/Authors&gt;</span>
+    <span style="color:#f92672">&lt;Description&gt;</span>Custom Templates<span style="color:#f92672">&lt;/Description&gt;</span>
+    <span style="color:#f92672">&lt;PackageTags&gt;</span>dotnet-new;templates<span style="color:#f92672">&lt;/PackageTags&gt;</span>
+    <span style="color:#f92672">&lt;TargetFramework&gt;</span>netstandard2.1<span style="color:#f92672">&lt;/TargetFramework&gt;</span>
+    <span style="color:#f92672">&lt;IncludeContentInPack&gt;</span>true<span style="color:#f92672">&lt;/IncludeContentInPack&gt;</span>
+    <span style="color:#f92672">&lt;IncludeBuildOutput&gt;</span>false<span style="color:#f92672">&lt;/IncludeBuildOutput&gt;</span>
+    <span style="color:#f92672">&lt;ContentTargetFolders&gt;</span>content<span style="color:#f92672">&lt;/ContentTargetFolders&gt;</span>
+    <span style="color:#f92672">&lt;NoDefaultExcludes&gt;</span>true<span style="color:#f92672">&lt;/NoDefaultExcludes&gt;</span>
+  <span style="color:#f92672">&lt;/PropertyGroup&gt;</span>
+
+  <span style="color:#f92672">&lt;ItemGroup&gt;</span>
+    <span style="color:#f92672">&lt;Content</span> <span style="color:#a6e22e">Include=</span><span style="color:#e6db74">&#34;templates\**\*&#34;</span> <span style="color:#a6e22e">Exclude=</span><span style="color:#e6db74">&#34;templates\**\bin\**;templates\**\obj\**;templates\**\.vs\**&#34;</span> <span style="color:#f92672">/&gt;</span>
+    <span style="color:#f92672">&lt;Compile</span> <span style="color:#a6e22e">Remove=</span><span style="color:#e6db74">&#34;**\*&#34;</span> <span style="color:#f92672">/&gt;</span>
+  <span style="color:#f92672">&lt;/ItemGroup&gt;</span>
+
+<span style="color:#f92672">&lt;/Project&gt;</span>
+</code></pre></div><p>After that, you can simply run the command <code>dotnet pack .\templatepack.csproj</code> (remember to update the package version) to create a new nuget package. You can install it by executing the command <code>dotnet new -i Custom.Templates.&lt;version&gt;.nupkg</code>. If you want to uninstall templates just run the command <code>dotnet new -u Custom.Templates</code>.</p>
+<h2 id="usage">Usage</h2>
+<p>Once you have installed your custom templates you can use them by executing the command <code>dotnet new &lt;template-name&gt;</code>. For the template above, the usage looks like <code>dotnet new my-custom-template --serviceName Custom.Application --customChoice=&quot;second&quot;</code>. If you followed step by step, you should see the newly generated application from your own template. Congratulations!</p>
+<h2 id="summary">Summary</h2>
+<p>In this post I showed you how to create and use custom .NET templates.</p>
+<p>The template engine offers features that allow you to replace values, conditionally generate of the file content and execute custom operations when your template is used.</p>
+<p>The source code of the above examples can be found <a href="https://github.com/bartlomiejgawel/blog-examples/tree/master/custom-dotnet-templates">here</a>.</p>
+]]></content>
+        </item>
+        
+    </channel>
+</rss>
